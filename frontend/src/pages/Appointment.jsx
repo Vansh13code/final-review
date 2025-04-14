@@ -118,6 +118,81 @@ const Appointment = () => {
 
     }
 
+    // Function to generate a random token for offline booking
+    const generateRandomToken = () => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let token = '';
+        for (let i = 0; i < 10; i++) {
+            token += characters.charAt(Math.floor(Math.random() * characters.length));
+        }
+        return token;
+    }
+
+    // Function to book offline appointment and download token
+    const bookOfflineAppointment = async () => {
+        if (!token) {
+            toast.warning('Login to book offline appointment')
+            return navigate('/login')
+        }
+
+        if (!slotTime) {
+            toast.warning('Please select a time slot')
+            return
+        }
+
+        const date = docSlots[slotIndex][0].datetime
+
+        let day = date.getDate()
+        let month = date.getMonth() + 1
+        let year = date.getFullYear()
+
+        const slotDate = day + "_" + month + "_" + year
+        const offlineToken = generateRandomToken()
+
+        try {
+            // Similar booking process as online but with a token
+            const { data } = await axios.post(backendUrl + '/api/user/book-appointment', 
+                { docId, slotDate, slotTime, isOffline: true, offlineToken }, 
+                { headers: { token } }
+            )
+            
+            if (data.success) {
+                toast.success(data.message)
+                getDoctosData()
+                
+                // Create content for the text file
+                const content = `
+                OFFLINE APPOINTMENT CONFIRMATION
+                ------------------------------------
+                Doctor: ${docInfo.name}
+                Date: ${day}/${month}/${year}
+                Time: ${slotTime}
+                Token: ${offlineToken}
+                ------------------------------------
+                Please bring this token to your appointment.
+                `;
+                
+                // Create a blob and download it
+                const blob = new Blob([content], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `appointment_${offlineToken}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                navigate('/my-appointments')
+            } else {
+                toast.error(data.message)
+            }
+        } catch (error) {
+            console.log(error)
+            toast.error(error.message)
+        }
+    }
+
     useEffect(() => {
         if (doctors.length > 0) {
             fetchDocInfo()
@@ -161,7 +236,7 @@ const Appointment = () => {
 
             {/* Booking slots */}
             <div className='sm:ml-72 sm:pl-4 mt-8 font-medium text-[#565656]'>
-                <p >Booking slots</p>
+                <p>Booking slots</p>
                 <div className='flex gap-3 items-center w-full overflow-x-scroll mt-4'>
                     {docSlots.length && docSlots.map((item, index) => (
                         <div onClick={() => setSlotIndex(index)} key={index} className={`text-center py-6 min-w-16 rounded-full cursor-pointer ${slotIndex === index ? 'bg-primary text-white' : 'border border-[#DDDDDD]'}`}>
@@ -177,7 +252,10 @@ const Appointment = () => {
                     ))}
                 </div>
 
-                <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-20 py-3 rounded-full my-6'>Book an appointment</button>
+                <div className='flex flex-wrap gap-4 my-6'>
+                    <button onClick={bookAppointment} className='bg-primary text-white text-sm font-light px-16 py-3 rounded-full'>Book an appointment</button>
+                    <button onClick={bookOfflineAppointment} className='bg-gray-700 text-white text-sm font-light px-16 py-3 rounded-full'>Book offline</button>
+                </div>
             </div>
 
             {/* Listing Releated Doctors */}
