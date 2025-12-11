@@ -9,7 +9,6 @@ import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 
-
 // app config
 const app = express()
 const port = process.env.PORT || 4000
@@ -18,7 +17,14 @@ connectCloudinary()
 
 // middlewares
 app.use(express.json())
-app.use(cors())
+
+app.use(cors({
+    origin: [
+        "https://final-review-frontend.netlify.app",
+        "https://final-review-admin.netlify.app"
+    ],
+    credentials: true
+}));
 
 // api endpoints
 app.use("/api/user", userRouter)
