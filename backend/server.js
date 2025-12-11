@@ -10,29 +10,35 @@ import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 
 // app config
-const app = express()
-const port = process.env.PORT || 4000
-connectDB()
-connectCloudinary()
+const app = express();
+const port = process.env.PORT || 4000;
 
-// middlewares
-app.use(express.json())
+// Connect DB & Cloudinary
+connectDB();
+connectCloudinary();
 
+// Middlewares
+app.use(express.json());
+
+// CORS for Vercel frontend
 app.use(cors({
     origin: [
-        "https://final-review-frontend.netlify.app",
-        "https://final-review-admin.netlify.app"
+        "https://final-review-xekl.vercel.app"   // Your frontend URL on Vercel
+        // Add admin URL here when you deploy admin:
+        // "https://final-review-admin.vercel.app"
     ],
     credentials: true
 }));
 
-// api endpoints
-app.use("/api/user", userRouter)
-app.use("/api/admin", adminRouter)
-app.use("/api/doctor", doctorRouter)
+// API endpoints
+app.use("/api/user", userRouter);
+app.use("/api/admin", adminRouter);
+app.use("/api/doctor", doctorRouter);
 
+// Default route
 app.get("/", (req, res) => {
-  res.send("API Working")
+  res.send("API Working");
 });
 
-app.listen(port, () => console.log(`Server started on PORT:${port}`))
+// Server start
+app.listen(port, () => console.log(`Server started on PORT:${port}`));
