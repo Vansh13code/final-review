@@ -20,12 +20,11 @@ connectCloudinary();
 // Middlewares
 app.use(express.json());
 
-// CORS for Vercel frontend
+// FINAL CORS FIX – supports both admin + user websites
 app.use(cors({
     origin: [
-        "https://final-review-xekl.vercel.app"   // Your frontend URL on Vercel
-        // Add admin URL here when you deploy admin:
-        // "https://final-review-admin.vercel.app"
+        "https://final-review-fwf6.vercel.app",   // ADMIN PANEL
+        "https://final-review-xekl.vercel.app"    // USER FRONTEND
     ],
     credentials: true
 }));
